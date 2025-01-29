@@ -9,3 +9,21 @@ export async function GET() {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req) {
+  try {
+    const { id } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Task ID is required" }, { status: 400 });
+    }
+
+    const deletedTask = await prisma.task.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true, deletedId: deletedTask.id }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}

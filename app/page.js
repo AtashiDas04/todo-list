@@ -36,10 +36,28 @@ export default function Home() {
     }
   };
 
+  // Function to delete all tasks
+  const deleteAllTasks = async () => {
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleteAll: true }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTasks([]); // Clear tasks from the UI
+      }
+    } catch (err) {
+      console.error("Error deleting all tasks:", err);
+    }
+  };
+
   // Function to add a new task
   const addTask = async () => {
     if (!newTask.trim()) return;
-    
+
     try {
       const res = await fetch("/api/tasks", {
         method: "POST",
@@ -63,12 +81,22 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-white mb-6">Smart Todo List</h1>
 
       {/* Add Task Button */}
-      <button
-        onClick={() => setIsAdding(true)}
-        className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-      >
-        Add Task
-      </button>
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={() => setIsAdding(true)}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Add Task
+        </button>
+
+        {/* Delete All Button */}
+        <button
+          onClick={deleteAllTasks}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Delete All
+        </button>
+      </div>
 
       {/* Input Box for New Task */}
       {isAdding && (

@@ -12,7 +12,14 @@ export async function GET() {
 
 export async function DELETE(req) {
   try {
-    const { id } = await req.json();
+    const { id, deleteAll } = await req.json();
+
+    if (deleteAll) {
+      // Delete all tasks
+      await prisma.task.deleteMany();
+      return NextResponse.json({ success: true, deletedAll: true }, { status: 200 });
+    }
+
     if (!id) {
       return NextResponse.json({ success: false, error: "Task ID is required" }, { status: 400 });
     }
@@ -25,18 +32,26 @@ export async function DELETE(req) {
 }
 
 export async function POST(req) {
-  try {
-    const { task } = await req.json();
-    if (!task || task.trim() === "") {
-      return NextResponse.json({ success: false, error: "Task cannot be empty" }, { status: 400 });
+    try {
+      const body = await req.text(); // Read request body as text
+      if (!body) {
+        return NextResponse.json({ success: false, error: "Empty request body" }, { status: 400 });
+      }
+  
+      const { task } = JSON.parse(body); // Now parse it safely
+  
+      if (!task || task.trim() === "") {
+        return NextResponse.json({ success: false, error: "Task cannot be empty" }, { status: 400 });
+      }
+  
+      const newTask = await prisma.task.create({
+        data: { task },
+      });
+  
+      return NextResponse.json({ success: true, task: newTask }, { status: 201 });
+    } catch (error) {
+      console.error("Error in POST API:", error);
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
-
-    const newTask = await prisma.task.create({
-      data: { task },
-    });
-
-    return NextResponse.json({ success: true, task: newTask }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
-}
+  
